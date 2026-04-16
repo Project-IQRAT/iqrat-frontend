@@ -26,7 +26,7 @@ export const HomeView = ({
   if (isLoading) return <div className="text-center py-20 text-slate-500">Loading profile...</div>;
   if (!selectedClass) return <div className="text-center py-20 text-slate-500 flex flex-col items-center"><BookOpen size={48} className="opacity-50 mb-4" />No courses assigned to you this semester.</div>;
 
-  // --- STRICT TIME CHECK LOGIC ---
+  // --- FIXED TIME CHECK LOGIC ---
   const now = new Date();
   const todayStr = now.toLocaleDateString('en-US', { weekday: 'long' });
   const slot = rawTimetable.find(t => t.offering_id === selectedClass?.id);
@@ -34,24 +34,43 @@ export const HomeView = ({
   let isTimeValid = false;
   let timeMessage = "No class scheduled right now.";
 
+  // Bridge the gap between DB naming and Logic naming
+  const startTimeStr = slot?.start_time || slot?.start; 
+  const slotDay = slot?.day_of_week || slot?.day;
+
   if (isOverrideActive || sessionActive) {
       isTimeValid = true;
       timeMessage = sessionActive ? "Broadcasting Live QR" : "Makeup Class Mode Active";
-  } else if (slot && slot.day === todayStr) {
-      const [h, m] = slot.start.split(':').map(Number);
+  } else if (slot && slotDay === todayStr && startTimeStr) {
       const classTime = new Date();
-      classTime.setHours(h, m, 0, 0);
+      
+      // Handles both "00:25:00" and formatted "12:25 AM"
+      let hours, minutes;
+      if (startTimeStr.includes('AM') || startTimeStr.includes('PM')) {
+          const [time, modifier] = startTimeStr.split(' ');
+          [hours, minutes] = time.split(':').map(Number);
+          if (hours === 12) hours = 0;
+          if (modifier === 'PM') hours += 12;
+      } else {
+          const timeParts = startTimeStr.split(':');
+          hours = Number(timeParts[0]);
+          minutes = Number(timeParts[1]);
+      }
+
+      classTime.setHours(hours, minutes, 0, 0);
       const diffMins = (classTime - now) / (1000 * 60);
 
-      // Allows starting 15 mins early, and stays valid up to 90 mins after start
-      if (diffMins <= 15 && diffMins >= -90) { 
+      // Unlocks 20 mins before and stays valid for 120 mins after start
+      if (diffMins <= 20 && diffMins >= -120) { 
           isTimeValid = true;
-          timeMessage = `Scheduled Time: ${slot.start} - ${slot.end}`;
+          timeMessage = `Active Session: ${startTimeStr}`;
+      } else if (diffMins > 20) {
+          timeMessage = `Locked: Too early. Starts at ${startTimeStr}`;
       } else {
-          timeMessage = `Locked: Scheduled for ${slot.start}`;
+          timeMessage = `Locked: Class ended. Scheduled for ${startTimeStr}`;
       }
-  } else {
-      timeMessage = `Not scheduled for today (${todayStr})`;
+  } else if (slot) {
+      timeMessage = `Not scheduled for today. This class is on ${slotDay}.`;
   }
 
   return (
