@@ -328,7 +328,7 @@ function LandingPage() {
             <p className="text-slate-400 text-sm mb-3">
               For collaboration, pilots, or demo access, contact your IQRAT team.
             </p>
-            <p className="text-white font-medium mb-8 text-lg hover:text-indigo-400 transition-colors cursor-pointer">iqrat.support@example.com</p>
+            <p className="text-white font-medium mb-8 text-lg hover:text-indigo-400 transition-colors cursor-pointer">project.iqrat@gmail.com</p>
             <p className="text-xs text-slate-600 font-mono">
               © {new Date().getFullYear()} IQRAT Systems. All rights reserved.
             </p>
