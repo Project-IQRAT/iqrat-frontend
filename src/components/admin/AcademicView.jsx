@@ -28,11 +28,11 @@ export const AcademicView = ({
         if (!deptForm.name || !deptForm.code) return showToast("Fill all department fields.", "error");
         setIsSubmitting(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/departments", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` }, body: JSON.stringify({ name: deptForm.name, code: deptForm.code }) });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/departments`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` }, body: JSON.stringify({ name: deptForm.name, code: deptForm.code }) });
             if (res.ok) { 
                 showToast("Department Created!", "success"); 
                 setDeptForm({ name: "", code: "" });
-                const deptRes = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/departments", { headers: { "Authorization": `Bearer ${currentToken}` } });
+                const deptRes = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/departments`, { headers: { "Authorization": `Bearer ${currentToken}` } });
                 if (deptRes.ok) setDepartments(await deptRes.json());
             } 
             else { const err = await res.json(); showToast(`Error: ${err.detail}`, "error"); }
@@ -43,7 +43,7 @@ export const AcademicView = ({
         if (!degreeForm.name || !degreeForm.code || !degreeForm.department_id) return showToast("Fill all degree fields.", "error");
         setIsSubmitting(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/degrees", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` }, body: JSON.stringify({ name: degreeForm.name, code: degreeForm.code, department_id: degreeForm.department_id }) });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/degrees`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` }, body: JSON.stringify({ name: degreeForm.name, code: degreeForm.code, department_id: degreeForm.department_id }) });
             if (res.ok) { 
                 showToast("Degree Program Created!", "success"); 
                 setDegreeForm({ name: "", code: "", department_id: departments[0]?.id || "" });
@@ -60,7 +60,7 @@ export const AcademicView = ({
         if (!subjectForm.name || !subjectForm.code || !subjectForm.degree_id) return showToast("Fill all subject fields.", "error");
         setIsSubmitting(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/subjects", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` }, body: JSON.stringify({ name: subjectForm.name, code: subjectForm.code, credit_hours: subjectForm.credit_hours, degree_id: subjectForm.degree_id, semester_no: subjectForm.semester_no }) });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/subjects`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` }, body: JSON.stringify({ name: subjectForm.name, code: subjectForm.code, credit_hours: subjectForm.credit_hours, degree_id: subjectForm.degree_id, semester_no: subjectForm.semester_no }) });
             if (res.ok) { showToast("Course Created!", "success"); setSubjectForm({ ...subjectForm, name: "", code: "" }); } 
             else { const err = await res.json(); showToast(`Error: ${err.detail}`, "error"); }
         } catch { showToast("Network Error", "error"); } finally { setIsSubmitting(false); }
@@ -71,7 +71,7 @@ export const AcademicView = ({
         setIsSubmitting(true);
         try {
             const batchName = `${batchForm.start_year}-${batchForm.end_year}`;
-            const batchRes = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/batches", {
+            const batchRes = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/batches`, {
                 method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                 body: JSON.stringify({ degree_id: parseInt(batchForm.degree_id), name: batchName, start_year: parseInt(batchForm.start_year), end_year: parseInt(batchForm.end_year) })
             });
@@ -79,13 +79,13 @@ export const AcademicView = ({
             if (batchRes.ok) {
                 const newBatch = await batchRes.json();
                 for (let i = 1; i <= 8; i++) {
-                    await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/semesters", {
+                    await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/semesters`, {
                         method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                         body: JSON.stringify({ session_id: newBatch.id, name: `Semester ${i} (${batchName})`, semester_no: i })
                     });
                 }
                 showToast(`Batch ${batchName} and its 8 Semesters auto-generated!`, "success");
-                const semRes = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/all-semesters", { headers: { "Authorization": `Bearer ${currentToken}` } });
+                const semRes = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-semesters`, { headers: { "Authorization": `Bearer ${currentToken}` } });
                 if (semRes.ok) setAllSemesters(await semRes.json());
             } else {
                 const err = await batchRes.json(); showToast(`Error: ${err.detail}`, "error");
@@ -97,7 +97,7 @@ export const AcademicView = ({
         if (!sectionForm.semester_id || !sectionForm.name) return showToast("Please select a semester and enter a section name.", "error");
         setIsSubmitting(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/sections", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/sections`, {
                 method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                 body: JSON.stringify({ semester_id: parseInt(sectionForm.semester_id), name: sectionForm.name })
             });
@@ -114,14 +114,14 @@ export const AcademicView = ({
         if (!classroomForm.room_no || !classroomForm.department_id) return showToast("Please enter a room number and select a department.", "error");
         setIsSubmitting(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/classrooms", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/classrooms`, {
                 method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                 body: JSON.stringify(classroomForm)
             });
             if (res.ok) {
                 showToast("Classroom Created Successfully!", "success");
                 setClassroomForm(prev => ({ ...prev, room_no: "", building_name: "", capacity: 60, latitude: 31.5204, longitude: 74.3587 }));
-                const classRes = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/classrooms", { headers: { "Authorization": `Bearer ${currentToken}` } });
+                const classRes = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/classrooms`, { headers: { "Authorization": `Bearer ${currentToken}` } });
                 if (classRes.ok) setAllClassrooms(await classRes.json());
             } else {
                 const err = await res.json(); showToast(`Error: ${err.detail}`, "error");
@@ -133,7 +133,7 @@ export const AcademicView = ({
         if (!offeringForm.semester_id || !offeringForm.subject_id || !offeringForm.lecturer_id) return showToast("Select a Semester, Subject, and Lecturer.", "error");
         setIsSubmitting(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/subject-offerings", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/subject-offerings`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                 body: JSON.stringify({ semester_id: parseInt(offeringForm.semester_id), subject_id: parseInt(offeringForm.subject_id), lecturer_id: parseInt(offeringForm.lecturer_id) })
@@ -157,7 +157,7 @@ export const AcademicView = ({
             let s_time = timetableForm.start_time.length === 5 ? `${timetableForm.start_time}:00` : timetableForm.start_time;
             let e_time = timetableForm.end_time.length === 5 ? `${timetableForm.end_time}:00` : timetableForm.end_time;
 
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/timetables", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/timetables`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                 body: JSON.stringify({
@@ -171,7 +171,7 @@ export const AcademicView = ({
             if (res.ok) { 
                 showToast("Class successfully added to Timetable!", "success"); 
                 setTimetableForm({...timetableForm, start_time: "", end_time: ""}); 
-                const ttRes = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/all-timetables", { headers: { "Authorization": `Bearer ${currentToken}` } });
+                const ttRes = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-timetables`, { headers: { "Authorization": `Bearer ${currentToken}` } });
                 if(ttRes.ok) setAllTimetables(await ttRes.json());
             }
             else { const err = await res.json(); showToast(`Error: ${err.detail}`, "error"); }
@@ -233,7 +233,7 @@ export const AcademicView = ({
             if (res.ok) {
                 showToast("Class Transferred Successfully!", "success");
                 setShowTransferModal(null);
-                const offRes = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/all-offerings", { headers: { "Authorization": `Bearer ${currentToken}` } });
+                const offRes = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-offerings`, { headers: { "Authorization": `Bearer ${currentToken}` } });
                 if (offRes.ok) setAllOfferings(await offRes.json());
             } else {
                 showToast("Failed to transfer class.", "error");

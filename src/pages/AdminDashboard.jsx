@@ -93,9 +93,14 @@ function AdminDashboard() {
       { id: 'repeats', label: 'Repeat Subjects', icon: RefreshCcw },
   ];
 
-  const permittedNavItems = ALL_NAV_ITEMS.filter(item => 
-      adminRoleLevel === "super_admin" || adminPerms.includes("ALL") || adminPerms.includes(item.id)
-  );
+  const adminPermsString = adminPerms.join(',');
+  
+  const permittedNavItems = React.useMemo(() => {
+      return ALL_NAV_ITEMS.filter(item => 
+          adminRoleLevel === "super_admin" || adminPerms.includes("ALL") || adminPerms.includes(item.id)
+      );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminRoleLevel, adminPermsString]);
   
   const AVAILABLE_TABS = ALL_NAV_ITEMS.map(item => ({ id: item.id, label: item.label }));
 
@@ -211,7 +216,7 @@ function AdminDashboard() {
       if (permittedNavItems.length > 0 && !permittedNavItems.find(t => t.id === activeTab)) {
           setActiveTab(permittedNavItems[0].id);
       }
-  }, [adminPerms.join(','), activeTab]);
+  }, [activeTab, permittedNavItems]);
 
   useEffect(() => {
     function handleClickOutside(event) { 
@@ -346,7 +351,7 @@ function AdminDashboard() {
           const match = studentFormSections.find(s => s.name.toUpperCase() === studentForm.suggested_section.toUpperCase());
           if (match) setStudentForm(prev => ({ ...prev, section_id: match.id }));
       }
-  }, [studentFormSections, studentForm.suggested_section]);
+  }, [studentFormSections, studentForm.suggested_section, studentForm.section_id]);
 
   useEffect(() => {
       if (!ttDeptFilter) { setTtDeptDegrees([]); return; }
@@ -377,7 +382,7 @@ function AdminDashboard() {
       const fetchDevices = async () => {
           setIsLoadingDevices(true);
           try {
-              const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/device-requests`, { headers: { "Authorization": `Bearer ${currentToken}` } });
+              const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/device-requests", { headers: { "Authorization": `Bearer ${currentToken}` } });
               if (res.ok) setDeviceRequests(await res.json());
           } catch(e) { console.error(e); }
           setIsLoadingDevices(false);
@@ -390,9 +395,9 @@ function AdminDashboard() {
           const fetchGeoData = async () => {
               try {
                   const [beaconsRes, logsRes, settingsRes] = await Promise.all([
-                      fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/geofence/active-beacons`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                      fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/geofence/violations`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                      fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/geofence/settings`, { headers: { "Authorization": `Bearer ${currentToken}` } })
+                      fetch("${import.meta.env.VITE_API_URL}/api/v1/system/geofence/active-beacons", { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                      fetch("${import.meta.env.VITE_API_URL}/api/v1/system/geofence/violations", { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                      fetch("${import.meta.env.VITE_API_URL}/api/v1/system/geofence/settings", { headers: { "Authorization": `Bearer ${currentToken}` } })
                   ]);
                   if (beaconsRes.ok) setActiveBeacons(await beaconsRes.json());
                   if (logsRes.ok) setViolationLogs(await logsRes.json());
@@ -411,7 +416,7 @@ function AdminDashboard() {
 
   useEffect(() => {
       if (activeTab === "communication" && currentToken) {
-          fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/communication/history`, { headers: { "Authorization": `Bearer ${currentToken}` } })
+          fetch("${import.meta.env.VITE_API_URL}/api/v1/system/communication/history", { headers: { "Authorization": `Bearer ${currentToken}` } })
               .then(res => res.json())
               .then(data => setCommHistory(data))
               .catch(() => console.error("Failed to load history"));
@@ -420,7 +425,7 @@ function AdminDashboard() {
 
   useEffect(() => {
       if (activeTab === "policies" && currentToken) {
-          fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/settings/academic`, { headers: { "Authorization": `Bearer ${currentToken}` } })
+          fetch("${import.meta.env.VITE_API_URL}/api/v1/system/settings/academic", { headers: { "Authorization": `Bearer ${currentToken}` } })
           .then(res => res.json())
           .then(data => setPolicies(data))
           .catch(() => console.error("Failed to load policies"));
@@ -434,16 +439,16 @@ function AdminDashboard() {
               .then(data => setAdminProfileData({ full_name: data.full_name, email: data.email, contact_no: data.contact_no || "" }))
               .catch(e => console.error(e));
       }
-  }, [currentToken]);
+  }, [currentToken, decodedToken.sub]);
 
   useEffect(() => {
       if (activeTab === "reports" && currentToken) {
-          fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/reports/history`, { headers: { "Authorization": `Bearer ${currentToken}` } })
+          fetch("${import.meta.env.VITE_API_URL}/api/v1/system/reports/history", { headers: { "Authorization": `Bearer ${currentToken}` } })
               .then(res => res.json())
               .then(data => setSubmittedReports(data))
               .catch(() => console.error("Failed to load reports"));
               
-          fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/reports/stats`, { headers: { "Authorization": `Bearer ${currentToken}` } })
+          fetch("${import.meta.env.VITE_API_URL}/api/v1/system/reports/stats", { headers: { "Authorization": `Bearer ${currentToken}` } })
               .then(res => res.json())
               .then(data => setReportStats(data))
               .catch(() => console.error("Failed to load stats"));
@@ -454,6 +459,33 @@ function AdminDashboard() {
   // 5. LOCAL HANDLERS (Export & Nav)
   // ==========================================
 
+  const handleBatchEnroll = async () => {
+      if (!enrollSectionForm.semester_id || !enrollSectionForm.section_id || !enrollSectionForm.subject_id) {
+          return showToast("Please select a Semester, Section, and Subject.", "error");
+      }
+      setIsSubmitting(true);
+      try {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/enroll-section`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
+              body: JSON.stringify(enrollSectionForm)
+          });
+          
+          if (res.ok) {
+              const data = await res.json();
+              showToast(data.msg || "Section Enrolled Successfully!", "success");
+              setEnrollSectionForm({ semester_id: "", section_id: "", subject_id: "" });
+          } else {
+              const err = await res.json();
+              showToast(`Error: ${err.detail}`, "error");
+          }
+      } catch {
+          showToast("Network Error", "error");
+      } finally {
+          setIsSubmitting(false);
+      }
+  };
+  
   const handleLogout = () => { 
       logout(); 
       setTimeout(() => navigate("/"), 10);
@@ -491,7 +523,7 @@ function AdminDashboard() {
       <div className="fixed inset-0 pointer-events-none z-0">
          <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-rose-900/10 rounded-full blur-[120px] opacity-20"></div>
          <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[120px] opacity-20"></div>
-         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
+         <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
       </div>
 
       <div className={`fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setDrawerOpen(false)} />
@@ -593,6 +625,7 @@ function AdminDashboard() {
                 usersList={usersList} departments={departments} studentDegrees={studentDegrees} 
                 systemAlerts={systemAlerts} adminRoleLevel={adminRoleLevel}
                 setActiveTab={setActiveTab} showToast={showToast}
+                systemStats={systemStats} 
             />
         )}
         {activeTab === "users" && (
@@ -622,7 +655,10 @@ function AdminDashboard() {
                 showTransferModal={showTransferModal} setShowTransferModal={setShowTransferModal} transferLecturerId={transferLecturerId} setTransferLecturerId={setTransferLecturerId}
                 timeSlots={timeSlots} setTimeSlots={setTimeSlots} newSlotForm={newSlotForm} setNewSlotForm={setNewSlotForm}
                 activeTerm={activeTerm} setActiveTerm={setActiveTerm} usersList={usersList} isSubmitting={isSubmitting} setIsSubmitting={setIsSubmitting}
-                setShowExportModal={setShowExportModal}
+                setShowExportModal={setShowExportModal} enrollSectionForm={enrollSectionForm} 
+                setEnrollSectionForm={setEnrollSectionForm}
+                semesterSections={semesterSections} 
+                handleBatchEnroll={handleBatchEnroll}
             />
         )}
         {activeTab === "repeats" && (

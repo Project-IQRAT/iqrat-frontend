@@ -103,7 +103,7 @@ export const HomeView = ({
               </div>
               
               <div className="flex-1 flex flex-col items-center justify-center p-4 relative min-h-0"> 
-                  <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-10 pointer-events-none"></div>
                   {sessionActive ? (
                       <div className="flex flex-col items-center gap-4 z-10 w-full max-w-md h-full justify-center">
                           <div className="relative p-3 bg-white rounded-2xl shadow-[0_0_60px_rgba(16,185,129,0.3)] animate-pulse-ring">

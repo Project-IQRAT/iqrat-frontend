@@ -29,7 +29,7 @@ function LandingPage() {
         <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[120px] animate-float"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-purple-900/20 rounded-full blur-[120px] animate-float-delay"></div>
         <div className="absolute top-[40%] left-[20%] w-[300px] h-[300px] bg-blue-900/10 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
+        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
       </div>
 
       {/* Header */}

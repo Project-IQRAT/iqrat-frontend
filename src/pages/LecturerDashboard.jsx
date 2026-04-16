@@ -67,7 +67,7 @@ function LecturerDashboard() {
   const navigate = useNavigate();
   const { logout, token } = useAuth();
   const currentToken = token || localStorage.getItem("token");
-  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1/academic`; 
+  const API_BASE_URL = "${import.meta.env.VITE_API_URL}/api/v1/academic"; 
   
   // --- STATE ---
   const [activeTab, setActiveTab] = useState("home");
@@ -697,7 +697,7 @@ function LecturerDashboard() {
     <div className="min-h-screen bg-[#000000] text-slate-300 font-sans selection:bg-indigo-500/30 flex flex-col h-[100dvh] overflow-hidden">
       <GlobalStyles />
       <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: "", type: "info" })} />
-      <div className="fixed inset-0 pointer-events-none z-0"><div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-900/20 rounded-full blur-[120px] opacity-30"></div><div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px] opacity-30"></div><div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div></div>
+      <div className="fixed inset-0 pointer-events-none z-0"><div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-900/20 rounded-full blur-[120px] opacity-30"></div><div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px] opacity-30"></div><div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 brightness-100 contrast-150"></div></div>
       <div className={`fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setDrawerOpen(false)} />
       
       <aside className={`fixed inset-y-0 left-0 z-[70] w-72 bg-[#050505]/95 backdrop-blur-2xl border-r border-white/10 shadow-2xl transform transition-transform duration-300 ease-out ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}>
