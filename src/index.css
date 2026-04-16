@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- NEW: SCROLLBAR HIDING --- */
+/* This hides the scrollbar but allows scrolling */
+@layer base {
+  *::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
+/* ============ Global Setup ============ */
+
+body {
+  /* Professional "White and Black mixed" feeling -> Deep Black/Gray Gradient */
+  /* This provides high contrast for white text and 3D elements */
+  background: linear-gradient(135deg, #18181b 0%, #000000 100%);
+  color: #f8fafc; /* Slate-50 */
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  /* overflow-x: hidden;  <-- Removed this because the rule above handles it better globally */
+}
+
+/* ============ 3D & Glassmorphism Utilities ============ */
+@layer components {
+  /* The Glass Card Effect */
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+  
+  /* 3D Perspective Container */
+  .perspective-container {
+    perspective: 1000px;
+  }
+
+  /* 3D Card Animation on Hover */
+  .card-3d-hover {
+    @apply transition-all duration-500 ease-out transform-gpu;
+    transform-style: preserve-3d;
+  }
+  
+  .card-3d-hover:hover {
+    transform: rotateX(10deg) rotateY(10deg) scale(1.05);
+    box-shadow: -20px 20px 50px rgba(0,0,0,0.5);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  /* Gradient Text */
+  .text-gradient-silver {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-300 to-slate-500;
+  }
+}
+
+/* ============ Custom Animations ============ */
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes float-delay {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-float {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-float-delay {
+  animation: float-delay 7s ease-in-out infinite 1s;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
