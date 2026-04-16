@@ -18,7 +18,7 @@ export const ProfileView = ({
         formData.append("contact_no", adminProfileData.contact_no);
 
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/me/profile", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/profile`, {
                 method: "PUT", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData
             });
             if (res.ok) showToast("Profile updated successfully!", "success");

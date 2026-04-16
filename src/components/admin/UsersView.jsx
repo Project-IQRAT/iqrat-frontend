@@ -116,7 +116,7 @@ export const UsersView = ({
             formData.append("password", lecturerForm.password);
             if (lecturerForm.contact_no) formData.append("contact_no", lecturerForm.contact_no);
 
-            const response = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/onboard/lecturer", { method: "POST", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData });
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/onboard/lecturer`, { method: "POST", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData });
             const data = await response.json();
             if (response.ok) {
                 showToast(`Success: ${data.msg}`, "success");
@@ -141,7 +141,7 @@ export const UsersView = ({
             const permsToSend = adminForm.role_level === "super_admin" ? "ALL" : adminForm.permissions.join(",");
             formData.append("permissions", permsToSend);
 
-            const response = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/onboard/admin", { method: "POST", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData });
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/onboard/admin`, { method: "POST", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData });
             const data = await response.json();
             if (response.ok) {
                 showToast(`Success: ${data.msg}`, "success");
@@ -162,7 +162,7 @@ export const UsersView = ({
             formData.append("password", studentForm.password); formData.append("photo", studentForm.photo);
             if (studentForm.contact_no) formData.append("contact_no", studentForm.contact_no);
 
-            const response = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/onboard/student", { method: "POST", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData });
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/onboard/student`, { method: "POST", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData });
             const data = await response.json();
             if (response.ok) {
                 showToast(`Success: ${data.msg}`, "success");
@@ -186,7 +186,7 @@ export const UsersView = ({
         }
 
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/onboard/bulk", { method: "POST", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/onboard/bulk`, { method: "POST", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData });
             const data = await res.json();
             if (res.ok) { showToast(data.msg, "success"); setBulkFile(null); } else showToast(`Error: ${data.detail}`, "error");
         } catch { showToast("Network error during upload.", "error"); } finally { setIsSubmitting(false); }

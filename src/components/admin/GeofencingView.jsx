@@ -12,7 +12,7 @@ export const GeofencingView = ({
     const handleSaveGeoSettings = async () => {
         setIsSavingGeo(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/system/geofence/settings", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/geofence/settings`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                 body: JSON.stringify({ strict_mode: geofenceActive, allowed_radius: geoRadius })

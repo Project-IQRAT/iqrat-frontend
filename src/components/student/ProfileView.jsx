@@ -58,7 +58,7 @@ export const ProfileView = ({
         if (photoFile) formData.append("photo", photoFile);
 
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/me/profile", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/profile`, {
                 method: "PUT", headers: { "Authorization": `Bearer ${currentToken}` }, body: formData
             });
             if (res.ok) {
@@ -118,7 +118,7 @@ export const ProfileView = ({
         }
 
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/me/device-request", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/device-request`, {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${currentToken}`, "Content-Type": "application/json" },
                 body: JSON.stringify({

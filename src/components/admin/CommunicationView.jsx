@@ -14,7 +14,7 @@ export const CommunicationView = ({
 
         setIsSendingBroadcast(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/system/communication/broadcast", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/communication/broadcast`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                 body: JSON.stringify(commForm)
@@ -23,7 +23,7 @@ export const CommunicationView = ({
             if (res.ok) {
                 showToast(data.msg, "success");
                 setCommForm({ target: "all", specificId: "", title: "", body: "", email: true, push: true });
-                const histRes = await fetch("${import.meta.env.VITE_API_URL}/api/v1/system/communication/history", { headers: { "Authorization": `Bearer ${currentToken}` } });
+                const histRes = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/communication/history`, { headers: { "Authorization": `Bearer ${currentToken}` } });
                 if (histRes.ok) setCommHistory(await histRes.json());
             } else {
                 showToast(`Error: ${data.detail}`, "error");

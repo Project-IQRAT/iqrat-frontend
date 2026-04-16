@@ -70,7 +70,7 @@ function ScanQRPage() {
       const location = await getStudentLocation();
 
       // 2. Send token + real GPS to backend
-      const response = await fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/session/scan", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/session/scan`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

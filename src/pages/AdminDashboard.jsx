@@ -243,9 +243,9 @@ function AdminDashboard() {
     const fetchCoreData = async () => {
         try {
             const [deptRes, userRes, sysRes] = await Promise.all([
-                fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/departments", { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                fetch("${import.meta.env.VITE_API_URL}/api/v1/users/all", { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                fetch("${import.meta.env.VITE_API_URL}/api/v1/system/dashboard-stats", { headers: { "Authorization": `Bearer ${currentToken}` } })
+                fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/departments`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/all`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/dashboard-stats`, { headers: { "Authorization": `Bearer ${currentToken}` } })
             ]);
 
             if (deptRes.ok) {
@@ -274,11 +274,11 @@ function AdminDashboard() {
       const fetchUniversalData = async () => {
           try {
               const [subRes, semRes, offRes, classRes, ttRes] = await Promise.all([
-                  fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/all-subjects", { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                  fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/all-semesters", { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                  fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/all-offerings", { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                  fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/classrooms", { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                  fetch("${import.meta.env.VITE_API_URL}/api/v1/academic/all-timetables", { headers: { "Authorization": `Bearer ${currentToken}` } })
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-subjects`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-semesters`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-offerings`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/classrooms`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-timetables`, { headers: { "Authorization": `Bearer ${currentToken}` } })
               ]);
               if(subRes.ok) setAllSubjects(await subRes.json());
               if(semRes.ok) setAllSemesters(await semRes.json());
@@ -377,7 +377,7 @@ function AdminDashboard() {
       const fetchDevices = async () => {
           setIsLoadingDevices(true);
           try {
-              const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/device-requests", { headers: { "Authorization": `Bearer ${currentToken}` } });
+              const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/device-requests`, { headers: { "Authorization": `Bearer ${currentToken}` } });
               if (res.ok) setDeviceRequests(await res.json());
           } catch(e) { console.error(e); }
           setIsLoadingDevices(false);
@@ -390,9 +390,9 @@ function AdminDashboard() {
           const fetchGeoData = async () => {
               try {
                   const [beaconsRes, logsRes, settingsRes] = await Promise.all([
-                      fetch("${import.meta.env.VITE_API_URL}/api/v1/system/geofence/active-beacons", { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                      fetch("${import.meta.env.VITE_API_URL}/api/v1/system/geofence/violations", { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                      fetch("${import.meta.env.VITE_API_URL}/api/v1/system/geofence/settings", { headers: { "Authorization": `Bearer ${currentToken}` } })
+                      fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/geofence/active-beacons`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                      fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/geofence/violations`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
+                      fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/geofence/settings`, { headers: { "Authorization": `Bearer ${currentToken}` } })
                   ]);
                   if (beaconsRes.ok) setActiveBeacons(await beaconsRes.json());
                   if (logsRes.ok) setViolationLogs(await logsRes.json());
@@ -411,7 +411,7 @@ function AdminDashboard() {
 
   useEffect(() => {
       if (activeTab === "communication" && currentToken) {
-          fetch("${import.meta.env.VITE_API_URL}/api/v1/system/communication/history", { headers: { "Authorization": `Bearer ${currentToken}` } })
+          fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/communication/history`, { headers: { "Authorization": `Bearer ${currentToken}` } })
               .then(res => res.json())
               .then(data => setCommHistory(data))
               .catch(() => console.error("Failed to load history"));
@@ -420,7 +420,7 @@ function AdminDashboard() {
 
   useEffect(() => {
       if (activeTab === "policies" && currentToken) {
-          fetch("${import.meta.env.VITE_API_URL}/api/v1/system/settings/academic", { headers: { "Authorization": `Bearer ${currentToken}` } })
+          fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/settings/academic`, { headers: { "Authorization": `Bearer ${currentToken}` } })
           .then(res => res.json())
           .then(data => setPolicies(data))
           .catch(() => console.error("Failed to load policies"));
@@ -438,12 +438,12 @@ function AdminDashboard() {
 
   useEffect(() => {
       if (activeTab === "reports" && currentToken) {
-          fetch("${import.meta.env.VITE_API_URL}/api/v1/system/reports/history", { headers: { "Authorization": `Bearer ${currentToken}` } })
+          fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/reports/history`, { headers: { "Authorization": `Bearer ${currentToken}` } })
               .then(res => res.json())
               .then(data => setSubmittedReports(data))
               .catch(() => console.error("Failed to load reports"));
               
-          fetch("${import.meta.env.VITE_API_URL}/api/v1/system/reports/stats", { headers: { "Authorization": `Bearer ${currentToken}` } })
+          fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/reports/stats`, { headers: { "Authorization": `Bearer ${currentToken}` } })
               .then(res => res.json())
               .then(data => setReportStats(data))
               .catch(() => console.error("Failed to load stats"));

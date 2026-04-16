@@ -16,7 +16,7 @@ export const RepeatView = ({
         }
         setIsSubmitting(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/users/enroll-repeat", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/enroll-repeat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                 body: JSON.stringify({

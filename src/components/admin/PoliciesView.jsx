@@ -10,7 +10,7 @@ export const PoliciesView = ({
     const handleSavePolicies = async () => {
         setIsSavingPolicies(true);
         try {
-            const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/system/settings/academic", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/settings/academic`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
                 body: JSON.stringify(policies)
