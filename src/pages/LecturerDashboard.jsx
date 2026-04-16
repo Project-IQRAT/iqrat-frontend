@@ -67,7 +67,7 @@ function LecturerDashboard() {
   const navigate = useNavigate();
   const { logout, token } = useAuth();
   const currentToken = token || localStorage.getItem("token");
-  const API_BASE_URL = "${import.meta.env.VITE_API_URL}/api/v1/academic"; 
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1/academic`; 
   
   // --- STATE ---
   const [activeTab, setActiveTab] = useState("home");
