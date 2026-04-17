@@ -243,56 +243,68 @@ function AdminDashboard() {
       setNewSlotForm(prev => ({ ...prev, label: `${format12H(prev.start)} - ${format12H(prev.end)}` }));
   }, [newSlotForm.start, newSlotForm.end]);
 
-  // Core Data Fetching
+  // 1. QUICK LOAD: Fetch only what the Admin sees immediately
   useEffect(() => {
-    const fetchCoreData = async () => {
-        try {
-            const [deptRes, userRes, sysRes] = await Promise.all([
-                fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/departments`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/all`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/dashboard-stats`, { headers: { "Authorization": `Bearer ${currentToken}` } })
-            ]);
-
-            if (deptRes.ok) {
-                const data = await deptRes.json(); setDepartments(data);
-                if (data.length > 0) {
-                    setLecturerForm(prev => ({ ...prev, department_id: data[0].id }));
-                    setDegreeForm(prev => ({ ...prev, department_id: data[0].id }));
-                    setSubjectForm(prev => ({ ...prev, temp_dept_id: data[0].id }));
-                    setStudentForm(prev => ({ ...prev, department_id: data[0].id }));
-                    setClassroomForm(prev => ({ ...prev, department_id: data[0].id }));
-                }
-            }
-            if (userRes.ok) setUsersList(await userRes.json());
-            if (sysRes.ok) {
-                const sysData = await sysRes.json();
-                setSystemAlerts(sysData.alerts);
-                setSystemStats(sysData.stats);
-            }
-        } catch (error) { console.error("Failed to load core data:", error); }
-    };
-    if (currentToken && !isSubmitting) fetchCoreData();
-  }, [currentToken, isSubmitting]);
-
-  // Universal Academic Data Fetching
-  useEffect(() => {
-      const fetchUniversalData = async () => {
+      const initializeAdminSpace = async () => {
+          if (!currentToken) return;
           try {
-              const [subRes, semRes, offRes, classRes, ttRes] = await Promise.all([
-                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-subjects`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-semesters`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-offerings`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/classrooms`, { headers: { "Authorization": `Bearer ${currentToken}` } }),
-                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-timetables`, { headers: { "Authorization": `Bearer ${currentToken}` } })
+              const headers = { "Authorization": `Bearer ${currentToken}` };
+              const [profRes, sysRes, deptRes, subRes] = await Promise.all([
+                  decodedToken.sub ? fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/profile?email=${decodedToken.sub}`, { headers }) : Promise.resolve(null),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/system/dashboard-stats`, { headers }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/departments`, { headers }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-subjects`, { headers })
               ]);
-              if(subRes.ok) setAllSubjects(await subRes.json());
-              if(semRes.ok) setAllSemesters(await semRes.json());
-              if(offRes.ok) setAllOfferings(await offRes.json());
-              if(classRes.ok) setAllClassrooms(await classRes.json());
-              if(ttRes.ok) setAllTimetables(await ttRes.json());
-          } catch(e) { console.error(e); }
+
+              if (profRes && profRes.ok) {
+                  const pData = await profRes.json();
+                  setAdminProfileData({ full_name: pData.full_name, email: pData.email, contact_no: pData.contact_no || "" });
+              }
+              if (sysRes.ok) {
+                  const sysData = await sysRes.json();
+                  setSystemAlerts(sysData.alerts);
+                  setSystemStats(sysData.stats);
+              }
+              if (deptRes.ok) {
+                  const data = await deptRes.json(); 
+                  setDepartments(data);
+                  if (data.length > 0) {
+                      setLecturerForm(prev => ({ ...prev, department_id: data[0].id }));
+                      setDegreeForm(prev => ({ ...prev, department_id: data[0].id }));
+                      setSubjectForm(prev => ({ ...prev, temp_dept_id: data[0].id }));
+                      setStudentForm(prev => ({ ...prev, department_id: data[0].id }));
+                      setClassroomForm(prev => ({ ...prev, department_id: data[0].id }));
+                  }
+              }
+              if (subRes.ok) setAllSubjects(await subRes.json());
+          } catch (e) { console.error("Admin Initialization Error:", e); }
       };
-      if (currentToken && !isSubmitting) fetchUniversalData();
+      initializeAdminSpace();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentToken, decodedToken.sub]);
+
+  // 2. BACKGROUND LOAD: Fetch all the massive lists silently
+  useEffect(() => {
+      const loadHeavyBackgroundData = async () => {
+          if (!currentToken) return;
+          try {
+              const headers = { "Authorization": `Bearer ${currentToken}` };
+              const [userRes, semRes, offRes, classRes, ttRes] = await Promise.all([
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/all`, { headers }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-semesters`, { headers }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-offerings`, { headers }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/classrooms`, { headers }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-timetables`, { headers })
+              ]);
+
+              if (userRes.ok) setUsersList(await userRes.json());
+              if (semRes.ok) setAllSemesters(await semRes.json());
+              if (offRes.ok) setAllOfferings(await offRes.json());
+              if (classRes.ok) setAllClassrooms(await classRes.json());
+              if (ttRes.ok) setAllTimetables(await ttRes.json());
+          } catch (e) { console.error("Background Data Load Error:", e); }
+      };
+      if (!isSubmitting) loadHeavyBackgroundData();
   }, [currentToken, isSubmitting]);
 
   // Dynamic Form Dependency Observers
@@ -432,14 +444,6 @@ function AdminDashboard() {
       }
   }, [activeTab, currentToken]);
 
-  useEffect(() => {
-      if (currentToken && decodedToken.sub) {
-          fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/profile?email=${decodedToken.sub}`, { headers: { "Authorization": `Bearer ${currentToken}` } })
-              .then(res => res.json())
-              .then(data => setAdminProfileData({ full_name: data.full_name, email: data.email, contact_no: data.contact_no || "" }))
-              .catch(e => console.error(e));
-      }
-  }, [currentToken, decodedToken.sub]);
 
   useEffect(() => {
       if (activeTab === "reports" && currentToken) {

@@ -1,4 +1,5 @@
 import React from "react";
+import React, { useState } from "react";
 import { Menu, Bell } from "lucide-react";
 
 export const StudentHeader = ({
@@ -11,8 +12,10 @@ export const StudentHeader = ({
     setShowNotifications,
     userPhoto,
     setActiveTab,
-    notifRef
+    notifRef,
+    handleLogout
 }) => {
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
     return (
       <div className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/5 transition-all duration-300 shrink-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -63,9 +66,38 @@ export const StudentHeader = ({
                   )}
               </div>
 
-              {/* CLickable Top Avatar -> Redirects to new Profile Settings */}
-              <div className="w-9 h-9 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-indigo-500 transition-colors shadow-lg" onClick={() => setActiveTab('profile')}>
-                  <img src={userPhoto} className="w-full h-full object-cover" alt="Profile" />
+              {/* CLickable Top Avatar -> Profile & Logout Dropdown */}
+              <div className="relative">
+                  <button 
+                      onClick={() => setShowProfileMenu(!showProfileMenu)}
+                      className="w-10 h-10 rounded-full border-2 border-white/10 overflow-hidden hover:border-indigo-500 transition-colors focus:outline-none shadow-lg"
+                  >
+                      <img src={userPhoto} alt="Profile" className="w-full h-full object-cover" />
+                  </button>
+
+                  {/* Profile Dropdown Menu */}
+                  {showProfileMenu && (
+                      <div className="absolute right-0 mt-3 w-56 bg-[#18181b] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-fade-in">
+                          <div className="px-4 py-3 border-b border-white/5 mb-2 bg-white/5">
+                              <p className="text-sm font-bold text-white truncate leading-tight">{profile.name}</p>
+                              <p className="text-[10px] text-slate-400 truncate">{profile.email}</p>
+                          </div>
+                          
+                          <button 
+                              onClick={() => { setShowProfileMenu(false); setActiveTab("profile"); }}
+                              className="w-full text-left px-4 py-2.5 text-sm text-slate-300 font-bold hover:bg-white/5 hover:text-white transition-colors"
+                          >
+                              My Profile
+                          </button>
+                          
+                          <button 
+                              onClick={handleLogout}
+                              className="w-full text-left px-4 py-2.5 text-sm text-rose-400 font-bold hover:bg-rose-500/10 hover:text-rose-300 transition-colors mt-1 border-t border-white/5"
+                          >
+                              Sign Out
+                          </button>
+                      </div>
+                  )}
               </div>
            </div>
         </div>

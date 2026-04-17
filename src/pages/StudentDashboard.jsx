@@ -120,21 +120,20 @@ function StudentDashboard() {
       }
   }, [currentToken, userPhoto]);
 
-  // Fetch Main Dashboard Data
+  // 1. Fetch Fast Data First (Renders the UI instantly)
   useEffect(() => {
-      const fetchMyData = async () => {
+      const fetchCoreData = async () => {
           if (!profile.email || !currentToken) return;
           try {
               setIsLoadingCourses(true);
               const headers = { "Authorization": `Bearer ${currentToken}` };
-              const [crsRes, histRes, statsRes, gradesRes, profRes, notifRes, aiRes] = await Promise.all([
+              
+              const [crsRes, histRes, statsRes, profRes, notifRes] = await Promise.all([
                   fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/courses?email=${profile.email}`, { headers }),
                   fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/attendance?email=${profile.email}`, { headers }),
                   fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/dashboard-stats?email=${profile.email}`, { headers }),
-                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/grades?email=${profile.email}`, { headers }),
                   fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/profile?email=${profile.email}`, { headers }),
-                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/notifications?email=${profile.email}`, { headers }),
-                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/predictions?email=${profile.email}`, { headers })
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/notifications?email=${profile.email}`, { headers })
               ]);
 
               if (crsRes.ok && histRes.ok) {
@@ -159,12 +158,35 @@ function StudentDashboard() {
                   setFullProfileSettings(pData);
                   if (pData.photo_path) setUserPhoto(formatImageUrl(pData.photo_path));
               }
-              if (aiRes.ok) setAiPredictions(await aiRes.json());
+              
+              let dbNotifs = notifRes.ok ? await notifRes.json() : [];
+              setNotificationsList(dbNotifs);
 
-              let dynamicNotifs = [];
+          } catch (error) {
+              console.error("Error fetching core data:", error);
+          } finally {
+              setIsLoadingCourses(false); // Stop the loading spinner immediately!
+          }
+      };
+      fetchCoreData();
+  }, [profile.email, currentToken]);
+
+  // 2. Fetch Slow Data in the Background (AI & Grades)
+  useEffect(() => {
+      const fetchHeavyData = async () => {
+          if (!profile.email || !currentToken) return;
+          try {
+              const headers = { "Authorization": `Bearer ${currentToken}` };
+              const [gradesRes, aiRes] = await Promise.all([
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/grades?email=${profile.email}`, { headers }),
+                  fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me/predictions?email=${profile.email}`, { headers })
+              ]);
+
               if (gradesRes.ok) {
                   const grades = await gradesRes.json();
                   setGradesData(grades);
+                  
+                  let dynamicNotifs = [];
                   grades.forEach(sub => {
                       if(sub.assessments) {
                           sub.assessments.forEach(ass => {
@@ -172,11 +194,9 @@ function StudentDashboard() {
                                   const deadlineDate = new Date(ass.deadline);
                                   deadlineDate.setHours(23, 59, 59); 
                                   const diffHours = (deadlineDate - new Date()) / (1000 * 60 * 60);
-                                  
                                   if (diffHours > 0 && diffHours <= 24) {
                                       dynamicNotifs.push({
-                                          id: `deadline_${ass.id}`, type: 'Alert',
-                                          title: `Due Tomorrow: ${ass.name}`,
+                                          id: `deadline_${ass.id}`, type: 'Alert', title: `Due Tomorrow: ${ass.name}`,
                                           message: `Your ${ass.category} for ${sub.subject_code} is due soon!`,
                                           is_read: false, time: "Urgent"
                                       });
@@ -185,18 +205,14 @@ function StudentDashboard() {
                           });
                       }
                   });
+                  setNotificationsList(prev => [...dynamicNotifs, ...prev]);
               }
-
-              let dbNotifs = notifRes.ok ? await notifRes.json() : [];
-              setNotificationsList([...dynamicNotifs, ...dbNotifs]);
-
+              if (aiRes.ok) setAiPredictions(await aiRes.json());
           } catch (error) {
-              console.error("Error fetching data:", error);
-          } finally {
-              setIsLoadingCourses(false);
+              console.error("Error fetching heavy data:", error);
           }
       };
-      fetchMyData();
+      fetchHeavyData();
   }, [profile.email, currentToken]);
 
   // Fetch Timetable Data
@@ -374,27 +390,27 @@ function StudentDashboard() {
       />
 
       {/* Extracted Sidebar */}
-      <StudentSidebar 
-          isDrawerOpen={isDrawerOpen} 
-          setDrawerOpen={setDrawerOpen} 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
-          handleLogout={handleLogout} 
-      />
+    <StudentSidebar 
+        isDrawerOpen={isDrawerOpen} 
+        setDrawerOpen={setDrawerOpen} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+    />
 
       {/* Extracted Header */}
-      <StudentHeader 
-          activeTab={activeTab}
-          profile={profile}
-          setDrawerOpen={setDrawerOpen}
-          handleBellClick={handleBellClick}
-          notificationsList={notificationsList}
-          showNotifications={showNotifications}
-          setShowNotifications={setShowNotifications}
-          userPhoto={userPhoto}
-          setActiveTab={setActiveTab}
-          notifRef={notifRef}
-      />
+    <StudentHeader 
+        activeTab={activeTab}
+        profile={profile}
+        setDrawerOpen={setDrawerOpen}
+        handleBellClick={handleBellClick}
+        notificationsList={notificationsList}
+        showNotifications={showNotifications}
+        setShowNotifications={setShowNotifications}
+        userPhoto={userPhoto}
+        setActiveTab={setActiveTab}
+        notifRef={notifRef}
+        handleLogout={handleLogout}
+    />
 
       {/* Main Dynamic View Content */}
       <main className="flex-1 p-4 lg:p-6 relative z-10 overflow-x-hidden overflow-y-auto scroll-smooth scrollbar-hide flex flex-col">
