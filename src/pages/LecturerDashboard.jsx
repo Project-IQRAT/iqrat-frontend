@@ -85,9 +85,11 @@ function LecturerDashboard() {
 
   const [showClassSelector, setShowClassSelector] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notificationsList, setNotificationsList] = useState([]);
   const classSelectorRef = useRef(null);
   const notifRef = useRef(null);
+  const profileMenuRef = useRef(null);
 
   const [sessionActive, setSessionActive] = useState(false);
   const [sessionId, setSessionId] = useState(null);
@@ -269,6 +271,7 @@ function LecturerDashboard() {
     function handleClickOutside(event) {
       if (classSelectorRef.current && !classSelectorRef.current.contains(event.target)) setShowClassSelector(false);
       if (notifRef.current && !notifRef.current.contains(event.target)) setShowNotifications(false);
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) setShowProfileMenu(false); // <-- ADDED
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -385,7 +388,12 @@ function LecturerDashboard() {
 
   const openManualEntry = () => {
       setManualRoster(roster.map(s => ({ ...s, status: 'absent' })));
-      setManualDate(new Date().toISOString().split('T')[0]); 
+      
+      // Get the true local date, ignoring UTC offset
+      const today = new Date();
+      const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+      
+      setManualDate(localDate); 
       setShowManualEntryModal(true);
   };
 
@@ -723,7 +731,6 @@ function LecturerDashboard() {
                 <button key={item.id} onClick={() => { setActiveTab(item.id); setDrawerOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-2xl transition-all ${activeTab === item.id ? "bg-white/10 text-white border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)]" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}><item.icon size={20} /> {item.label}</button>
             ))}
           </nav>
-          <div className="p-6 border-t border-white/5 bg-gradient-to-t from-white/5 to-transparent"><button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-xs text-rose-300 hover:text-white py-3 border border-rose-500/20 bg-rose-500/10 rounded-xl hover:bg-rose-500/20 transition-all"><LogOut size={14} /> Sign Out</button></div>
         </div>
       </aside>
 
@@ -792,11 +799,37 @@ function LecturerDashboard() {
                   )}
               </div>
 
-              <div 
-                  className="w-9 h-9 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-indigo-500 transition-colors shadow-lg bg-slate-800 flex items-center justify-center text-white font-bold" 
-                  onClick={() => setActiveTab('profile')}
-              >
-                  {profile.image ? <img src={profile.image} className="w-full h-full object-cover" alt="Profile" /> : profile.name.charAt(0)}
+              {/* --- PROFILE DROPDOWN MENU --- */}
+              <div className="relative" ref={profileMenuRef}>
+                  <button 
+                      onClick={() => setShowProfileMenu(!showProfileMenu)}
+                      className="w-10 h-10 rounded-full border-2 border-white/10 overflow-hidden hover:border-indigo-500 transition-colors focus:outline-none shadow-lg bg-slate-800 flex items-center justify-center text-white font-bold ml-2"
+                  >
+                      {profile.image ? <img src={profile.image} alt="Profile" className="w-full h-full object-cover" /> : profile.name.charAt(0)}
+                  </button>
+
+                  {showProfileMenu && (
+                      <div className="absolute right-0 mt-3 w-56 bg-[#18181b] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-fade-in">
+                          <div className="px-4 py-3 border-b border-white/5 mb-2 bg-white/5">
+                              <p className="text-sm font-bold text-white truncate leading-tight">{profile.name}</p>
+                              <p className="text-[10px] text-slate-400 truncate">{profile.email}</p>
+                          </div>
+                          
+                          <button 
+                              onClick={() => { setShowProfileMenu(false); setActiveTab("profile"); }}
+                              className="w-full text-left px-4 py-2.5 text-sm text-slate-300 font-bold hover:bg-white/5 hover:text-white transition-colors"
+                          >
+                              My Profile
+                          </button>
+                          
+                          <button 
+                              onClick={() => { setShowProfileMenu(false); handleLogout(); }}
+                              className="w-full text-left px-4 py-2.5 text-sm text-rose-400 font-bold hover:bg-rose-500/10 hover:text-rose-300 transition-colors mt-1 border-t border-white/5"
+                          >
+                              Sign Out
+                          </button>
+                      </div>
+                  )}
               </div>
            </div>
         </div>
