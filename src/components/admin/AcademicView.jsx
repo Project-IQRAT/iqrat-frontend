@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowLeft, Building, GraduationCap, BookOpen, Lock, Trash2, Layers, Users, MapPin, UserPlus, RefreshCcw, Calendar, FileSpreadsheet, FileText, Download, Clock, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Building, GraduationCap, BookOpen, Lock, Trash2, Layers, Users, MapPin, UserPlus, RefreshCcw, Calendar, FileSpreadsheet, FileText, Download, Clock, X, Edit2 } from 'lucide-react';
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -37,6 +37,48 @@ export const AcademicView = ({
             } 
             else { const err = await res.json(); showToast(`Error: ${err.detail}`, "error"); }
         } catch { showToast("Network Error", "error"); } finally { setIsSubmitting(false); }
+    };
+
+    // --- EDIT TIMETABLE STATE & HANDLER ---
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingSlot, setEditingSlot] = useState(null);
+
+    const handleUpdateTimetable = async (e) => {
+        e.preventDefault();
+        if (!editingSlot) return;
+        setIsSubmitting(true);
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/timetables/${editingSlot.id}`, {
+                method: "PUT",
+                headers: { 
+                    "Content-Type": "application/json", 
+                    "Authorization": `Bearer ${currentToken}` 
+                },
+                body: JSON.stringify({
+                    day_of_week: editingSlot.day_of_week,
+                    start_time: editingSlot.start_time.length === 5 ? `${editingSlot.start_time}:00` : editingSlot.start_time,
+                    end_time: editingSlot.end_time.length === 5 ? `${editingSlot.end_time}:00` : editingSlot.end_time,
+                    classroom_id: parseInt(editingSlot.classroom_id)
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                showToast(data.msg, "success");
+                setIsEditModalOpen(false);
+                setEditingSlot(null);
+                
+                // Refresh the timetable grid immediately
+                const ttRes = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/academic/all-timetables`, { headers: { "Authorization": `Bearer ${currentToken}` } });
+                if(ttRes.ok) setAllTimetables(await ttRes.json());
+            } else {
+                showToast(`Error: ${data.detail}`, "error");
+            }
+        } catch {
+            showToast("Network Error while updating", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleCreateDegree = async () => {
@@ -739,7 +781,23 @@ export const AcademicView = ({
                                                                             <span className="bg-black/50 text-indigo-300 px-1.5 rounded">{room ? room.room_no : 'TBD'}</span>
                                                                             <span className="text-slate-400 truncate ml-1">{lec ? lec.name : 'TBD'}</span>
                                                                         </div>
-                                                                        <button onClick={() => handleDeleteTimetable(slot.id)} className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 text-rose-500 hover:text-white bg-rose-900/80 hover:bg-rose-600 rounded-full p-0.5 no-print transition-all" title="Remove from schedule"><X size={12}/></button>
+                                                                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 flex gap-1 no-print transition-all z-10">
+                                                                            <button onClick={() => {
+                                                                                setEditingSlot({
+                                                                                    id: slot.id,
+                                                                                    day_of_week: slot.day_of_week,
+                                                                                    start_time: slot.start_time,
+                                                                                    end_time: slot.end_time,
+                                                                                    classroom_id: slot.classroom_id || ""
+                                                                                    });
+                                                                                setIsEditModalOpen(true);
+                                                                                }} className="text-blue-400 hover:text-white bg-blue-900/90 hover:bg-blue-600 rounded-full p-1.5 shadow-lg" title="Edit Schedule">
+                                                                                <Edit2 size={10}/>
+                                                                            </button>
+                                                                            <button onClick={() => handleDeleteTimetable(slot.id)} className="text-rose-400 hover:text-white bg-rose-900/90 hover:bg-rose-600 rounded-full p-1.5 shadow-lg" title="Remove from schedule">
+                                                                                <X size={10}/>
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 );
                                                             })}
@@ -799,6 +857,76 @@ export const AcademicView = ({
                                 </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* --- RESCHEDULE MODAL --- */}
+            {isEditModalOpen && editingSlot && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="bg-[#18181b] border border-white/10 rounded-3xl w-full max-w-md p-8 shadow-2xl animate-fade-in">
+                        <div className="flex justify-between items-center mb-2">
+                            <h3 className="text-xl font-bold text-white flex items-center gap-2"><Clock size={20} className="text-blue-500"/> Reschedule Class</h3>
+                            <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-white"><X size={20}/></button>
+                        </div>
+                        <p className="text-xs text-slate-400 mb-6">Changing this time will preserve all historical attendance data linked to this class.</p>
+                        
+                        <form onSubmit={handleUpdateTimetable} className="space-y-4">
+                            <div>
+                                <label className="text-xs text-slate-500 uppercase font-bold block mb-1">Day of Week</label>
+                                <select 
+                                    value={editingSlot.day_of_week}
+                                    onChange={(e) => setEditingSlot({...editingSlot, day_of_week: e.target.value})}
+                                    className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                                    required
+                                >
+                                    {DAYS.map(day => <option key={day} value={day}>{day}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs text-slate-500 uppercase font-bold block mb-1">Start Time</label>
+                                    <input 
+                                        type="time" step="1"
+                                        value={editingSlot.start_time}
+                                        onChange={(e) => setEditingSlot({...editingSlot, start_time: e.target.value})}
+                                        className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-slate-500 uppercase font-bold block mb-1">End Time</label>
+                                    <input 
+                                        type="time" step="1"
+                                        value={editingSlot.end_time}
+                                        onChange={(e) => setEditingSlot({...editingSlot, end_time: e.target.value})}
+                                        className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-xs text-slate-500 uppercase font-bold block mb-1">Classroom</label>
+                                <select 
+                                    value={editingSlot.classroom_id}
+                                    onChange={(e) => setEditingSlot({...editingSlot, classroom_id: e.target.value})}
+                                    className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-blue-500 outline-none"
+                                    required
+                                >
+                                    <option value="">Select Room</option>
+                                    {allClassrooms.map(c => <option key={c.id} value={c.id}>{c.room_no}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="flex gap-3 mt-6 pt-4 border-t border-white/10">
+                                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-2.5 rounded-xl transition-colors text-sm">Cancel</button>
+                                <button type="submit" disabled={isSubmitting} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-500/20 text-sm disabled:opacity-50">
+                                    {isSubmitting ? "Saving..." : "Save Changes"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
