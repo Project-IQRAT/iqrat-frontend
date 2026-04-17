@@ -16,7 +16,13 @@ export const decodeJWT = (token) => {
 // Helper to format backend image paths to real URLs
 export const formatImageUrl = (path) => {
     if (!path) return defaultLogoImg;
-    if (path.startsWith("http") || path.startsWith("blob")) return path;
-    const cleanPath = path.replace(/\\/g, '/');
+    
+    // If it's a Cloudinary URL (or any external URL), return it as-is
+    if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("blob")) {
+        return path;
+    }
+    
+    // Fallback for old local files (cleans up backslashes and accidental leading slashes)
+    const cleanPath = path.replace(/\\/g, '/').replace(/^\/+/, '');
     return `${import.meta.env.VITE_API_URL}/${cleanPath}`;
 };

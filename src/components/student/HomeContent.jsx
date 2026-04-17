@@ -50,6 +50,39 @@ export const HomeContent = ({
          </div>
       </div>
 
+      {/* --- MOBILE AI & UP NEXT CARDS --- */}
+      <div className="flex flex-col gap-4 mb-20 lg:hidden w-full shrink-0">
+          <div className="bg-[#0c0c0e] border border-white/10 rounded-3xl p-5 relative overflow-hidden flex flex-col h-[300px] shadow-xl">
+              <div className="flex items-center justify-between z-10 shrink-0 mb-4">
+                  <div>
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2"><Sparkles className="text-rose-400 w-4 h-4"/> AI Analysis</h3>
+                  </div>
+              </div>
+              <div className="flex-1 w-full min-h-0 flex flex-col">
+                  {aiPredictions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-slate-500 text-xs text-center">
+                          <Sparkles size={24} className="mb-2 opacity-20"/>
+                          {subjects.length === 0 ? "Enroll in a course to unlock AI predictions." : "Not enough data."}
+                      </div>
+                  ) : (
+                      <AIPredictionChart data={aiPredictions} />
+                  )}
+              </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-indigo-900/40 to-[#0c0c0e] border border-indigo-500/20 rounded-3xl p-6 relative overflow-hidden group flex flex-col justify-center min-h-[180px]">
+              <p className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span> Up Next
+              </p>
+              <h3 className="text-2xl font-bold text-white leading-tight truncate">{nextClass.subject}</h3>
+              <p className="text-xs text-slate-400 mt-1">{nextClass.room} • {nextClass.code}</p>
+              <div className="mt-4 bg-black/40 border border-white/5 rounded-2xl p-3 flex justify-between items-center">
+                 <span className="text-xs font-mono text-slate-200">{nextClass.time}</span>
+                 <span className="text-[10px] bg-white text-black font-bold px-2 py-1 rounded shadow-lg">SOON</span>
+              </div>
+          </div>
+      </div>
+
       {/* DESKTOP LAYOUT - SCROLLABLE AND ORGANIC */}
       <div className="hidden lg:grid grid-cols-2 gap-6 w-full">
           
