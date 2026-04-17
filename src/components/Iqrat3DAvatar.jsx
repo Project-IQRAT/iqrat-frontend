@@ -51,7 +51,7 @@ const Iqrat3DAvatar = ({ mood = "focused", enableTracking = true }) => {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.SoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     
     while (containerRef.current.firstChild) {
       containerRef.current.removeChild(containerRef.current.firstChild);
