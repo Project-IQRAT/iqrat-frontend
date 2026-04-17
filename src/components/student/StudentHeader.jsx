@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Menu, Bell } from "lucide-react";
 
 export const StudentHeader = ({
@@ -15,6 +15,18 @@ export const StudentHeader = ({
     handleLogout
 }) => {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const profileMenuRef = useRef(null);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+                setShowProfileMenu(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
     return (
       <div className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/5 transition-all duration-300 shrink-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -65,8 +77,8 @@ export const StudentHeader = ({
                   )}
               </div>
 
-              {/* CLickable Top Avatar -> Profile & Logout Dropdown */}
-              <div className="relative">
+              {/* Profile Dropdown Container */}
+              <div className="relative" ref={profileMenuRef}>
                   <button 
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
                       className="w-10 h-10 rounded-full border-2 border-white/10 overflow-hidden hover:border-indigo-500 transition-colors focus:outline-none shadow-lg"
@@ -90,7 +102,10 @@ export const StudentHeader = ({
                           </button>
                           
                           <button 
-                              onClick={handleLogout}
+                              onClick={() => {
+                                  setShowProfileMenu(false);
+                                  handleLogout();
+                              }}
                               className="w-full text-left px-4 py-2.5 text-sm text-rose-400 font-bold hover:bg-rose-500/10 hover:text-rose-300 transition-colors mt-1 border-t border-white/5"
                           >
                               Sign Out

@@ -40,12 +40,7 @@ export const StudentSidebar = ({
             ))}
           </nav>
 
-          <div className="p-6 border-t border-white/5 bg-gradient-to-t from-white/5 to-transparent">
-            <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-xs text-rose-300 hover:text-white py-3 border border-rose-500/20 bg-rose-500/10 rounded-xl hover:bg-rose-500/20 transition-all">
-                <LogOut size={14} /> Sign Out
-            </button>
           </div>
-        </div>
       </aside>
   );
 };
